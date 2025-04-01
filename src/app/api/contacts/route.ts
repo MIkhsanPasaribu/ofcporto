@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+import '@types/uuid';
 import fs from 'fs';
 import path from 'path';
 
