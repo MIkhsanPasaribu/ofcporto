@@ -1,83 +1,70 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
+import path from 'path';
 
-const prisma = new PrismaClient()
+// Path to the JSON file that will store contacts
+const dataFilePath = path.join(process.cwd(), 'data', 'contacts.json');
+
+// Ensure the data directory exists
+const dataDir = path.join(process.cwd(), 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+// Initialize the contacts file if it doesn't exist
+if (!fs.existsSync(dataFilePath)) {
+  fs.writeFileSync(dataFilePath, JSON.stringify([]));
+}
 
 export async function GET() {
   try {
-    const contacts = await prisma.contact.findMany({
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+    const fileContents = fs.readFileSync(dataFilePath, 'utf8');
+    const contacts = JSON.parse(fileContents);
     
-    return NextResponse.json(contacts)
+    return NextResponse.json(contacts);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch contacts' }, { status: 500 })
+    console.error('Error reading contacts:', error);
+    return NextResponse.json({ error: 'Failed to fetch contacts' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const body = await request.json();
     
-    const contact = await prisma.contact.create({
-      data: {
-        name: body.name,
-        email: body.email,
-        subject: body.subject,
-        message: body.message,
-        read: false
-      }
-    })
-    
-    return NextResponse.json(contact, { status: 201 })
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to create contact' }, { status: 500 })
-  }
-}
-
-export async function PUT(request: Request) {
-  try {
-    const body = await request.json()
-    
-    if (!body.id) {
-      return NextResponse.json({ error: 'ID is required' }, { status: 400 })
+    // Validate required fields
+    if (!body.name || !body.email || !body.message) {
+      return NextResponse.json(
+        { error: 'Name, email, and message are required' },
+        { status: 400 }
+      );
     }
     
-    const contact = await prisma.contact.update({
-      where: {
-        id: body.id
-      },
-      data: {
-        read: body.read
-      }
-    })
+    // Read existing contacts
+    const fileContents = fs.readFileSync(dataFilePath, 'utf8');
+    const contacts = JSON.parse(fileContents);
     
-    return NextResponse.json(contact)
+    // Create new contact
+    const newContact = {
+      id: uuidv4(),
+      name: body.name,
+      email: body.email,
+      subject: body.subject || '',
+      message: body.message,
+      read: false,
+      createdAt: new Date().toISOString()
+    };
+    
+    // Add to contacts array
+    contacts.push(newContact);
+    
+    // Write back to file
+    fs.writeFileSync(dataFilePath, JSON.stringify(contacts, null, 2));
+    
+    return NextResponse.json({ success: true, contact: newContact });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to update contact' }, { status: 500 })
-  }
-}
-
-export async function DELETE(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get('id')
-    
-    if (!id) {
-      return NextResponse.json({ error: 'ID is required' }, { status: 400 })
-    }
-    
-    await prisma.contact.delete({
-      where: {
-        id
-      }
-    })
-    
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete contact' }, { status: 500 })
+    console.error('Error saving contact:', error);
+    return NextResponse.json({ error: 'Failed to save contact' }, { status: 500 });
   }
 }
