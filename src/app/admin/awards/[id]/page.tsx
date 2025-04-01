@@ -5,7 +5,9 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import FormField from '@/components/admin/FormField';
 
-export default function AwardForm({ params }: { params: { id: string } }) {
+export default function AwardEditPage({ params }: { 
+  params: { id: string } 
+}) {
   const router = useRouter();
   const { id } = params;
   const isNew = id === 'new';
