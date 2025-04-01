@@ -1,127 +1,97 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { useRouter, usePathname } from 'next/navigation';
-import { signOut } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (status === 'loading') {
-      return;
-    }
-    
-    setIsLoading(false);
-    
-    // If not logged in and not on login page, redirect to login
-    if (status === 'unauthenticated' && pathname !== '/admin/login') {
-      router.push('/admin/login');
-    }
-  }, [status, router, pathname]);
-
-  // Don't show admin layout on login page
+  const { data: session, status } = useSession();
+  
+  // Skip auth check for login page
+  if (pathname !== '/admin/login' && status !== 'loading' && !session) {
+    redirect('/admin/login');
+  }
+  
+  // Don't show layout on login page
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
-
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If not authenticated, don't render anything (will redirect)
-  if (status === 'unauthenticated') {
-    return null;
-  }
-
+  
+  const navigation = [
+    { name: 'Dashboard', href: '/admin' },
+    { name: 'About', href: '/admin/about' },
+    { name: 'Experiences', href: '/admin/experiences' },
+    { name: 'Education', href: '/admin/education' },
+    { name: 'Skills', href: '/admin/skills' },
+    { name: 'Projects', href: '/admin/projects' },
+    { name: 'Certifications', href: '/admin/certifications' },
+    { name: 'Awards', href: '/admin/awards' },
+    { name: 'Contact Messages', href: '/admin/contacts' },
+  ];
+  
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <div className="w-64 bg-gray-800 text-white">
-        <div className="p-4">
-          <h1 className="text-2xl font-bold">Portfolio CMS</h1>
-        </div>
-        <nav className="mt-6">
-          <ul>
-            <li>
-              <Link href="/admin" className="block py-2 px-4 hover:bg-gray-700">
-                Dashboard
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/about" className="block py-2 px-4 hover:bg-gray-700">
-                About
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/experiences" className="block py-2 px-4 hover:bg-gray-700">
-                Experiences
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/projects" className="block py-2 px-4 hover:bg-gray-700">
-                Projects
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/skills" className="block py-2 px-4 hover:bg-gray-700">
-                Skills
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/education" className="block py-2 px-4 hover:bg-gray-700">
-                Education
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/certifications" className="block py-2 px-4 hover:bg-gray-700">
-                Certifications
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/awards" className="block py-2 px-4 hover:bg-gray-700">
-                Awards
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/contacts" className="block py-2 px-4 hover:bg-gray-700">
-                Contacts
-              </Link>
-            </li>
-          </ul>
-        </nav>
-        
-        <div className="mt-auto p-4 border-t border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm">{session?.user?.name || session?.user?.email}</p>
+    <div className="min-h-screen bg-gray-100">
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex">
+              <div className="flex-shrink-0 flex items-center">
+                <Link href="/admin" className="text-xl font-bold text-blue-600">
+                  Portfolio Admin
+                </Link>
+              </div>
+              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                {navigation.map((item) => {
+                  const isActive = pathname === item.href || 
+                    (item.href !== '/admin' && pathname.startsWith(item.href));
+                  
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                        isActive
+                          ? 'border-blue-500 text-gray-900'
+                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-            <button 
-              onClick={() => signOut({ callbackUrl: '/admin/login' })}
-              className="text-sm text-gray-300 hover:text-white"
-            >
-              Logout
-            </button>
+            <div className="hidden sm:ml-6 sm:flex sm:items-center">
+              <div className="ml-3 relative">
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-500 mr-2">
+                    {session?.user?.name}
+                  </span>
+                  <Link
+                    href="/api/auth/signout"
+                    className="text-sm text-red-600 hover:text-red-800"
+                  >
+                    Sign out
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 p-8 bg-gray-100">
-        {children}
+      </nav>
+      
+      <div className="py-10">
+        <main>
+          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );
