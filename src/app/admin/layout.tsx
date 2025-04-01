@@ -1,7 +1,52 @@
-import { ReactNode } from 'react'
-import Link from 'next/link'
+'use client';
+
+import { ReactNode, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { useRouter, usePathname } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === 'loading') {
+      return;
+    }
+    
+    setIsLoading(false);
+    
+    // If not logged in and not on login page, redirect to login
+    if (status === 'unauthenticated' && pathname !== '/admin/login') {
+      router.push('/admin/login');
+    }
+  }, [status, router, pathname]);
+
+  // Don't show admin layout on login page
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If not authenticated, don't render anything (will redirect)
+  if (status === 'unauthenticated') {
+    return null;
+  }
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -58,6 +103,20 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </li>
           </ul>
         </nav>
+        
+        <div className="mt-auto p-4 border-t border-gray-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm">{session?.user?.name || session?.user?.email}</p>
+            </div>
+            <button 
+              onClick={() => signOut({ callbackUrl: '/admin/login' })}
+              className="text-sm text-gray-300 hover:text-white"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Main content */}
@@ -65,5 +124,5 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         {children}
       </div>
     </div>
-  )
+  );
 }
