@@ -22,8 +22,8 @@ const handler = NextAuth({
         try {
           const user = await prisma.user.findUnique({
             where: {
-              email: credentials.email,
-            },
+              email: credentials.email
+            }
           });
 
           if (!user) {
@@ -42,17 +42,22 @@ const handler = NextAuth({
           return {
             id: user.id,
             email: user.email,
-            name: user.name,
+            name: user.name
           };
         } catch (error) {
-          console.error("Authentication error:", error);
+          console.error("Auth error:", error);
           return null;
         }
-      },
-    }),
+      }
+    })
   ],
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
   pages: {
     signIn: "/admin/login",
+    error: "/admin/login",
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -62,16 +67,13 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
+      if (token && session.user) {
         (session.user as any).id = token.id as string;
       }
       return session;
-    },
+    }
   },
-  session: {
-    strategy: "jwt",
-  },
-  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
 });
 
 export { handler as GET, handler as POST };
