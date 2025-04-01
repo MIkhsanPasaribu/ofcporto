@@ -6,15 +6,15 @@ const prisma = new PrismaClient()
 
 export async function GET() {
   try {
-    const projects = await prisma.project.findMany({
+    const skills = await prisma.skill.findMany({
       orderBy: {
-        createdAt: 'desc'
+        category: 'asc'
       }
     })
     
-    return NextResponse.json(projects)
+    return NextResponse.json(skills)
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch skills' }, { status: 500 })
   }
 }
 
@@ -22,20 +22,17 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     
-    const project = await prisma.project.create({
+    const skill = await prisma.skill.create({
       data: {
-        title: body.title,
-        description: body.description,
-        imageUrl: body.imageUrl,
-        demoUrl: body.demoUrl,
-        githubUrl: body.githubUrl,
-        technologies: body.technologies || []
+        name: body.name,
+        level: body.level || 0,
+        category: body.category
       }
     })
     
-    return NextResponse.json(project, { status: 201 })
+    return NextResponse.json(skill, { status: 201 })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to create skill' }, { status: 500 })
   }
 }
 
@@ -47,23 +44,20 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'ID is required' }, { status: 400 })
     }
     
-    const project = await prisma.project.update({
+    const skill = await prisma.skill.update({
       where: {
         id: body.id
       },
       data: {
-        title: body.title,
-        description: body.description,
-        imageUrl: body.imageUrl,
-        demoUrl: body.demoUrl,
-        githubUrl: body.githubUrl,
-        technologies: body.technologies || []
+        name: body.name,
+        level: body.level || 0,
+        category: body.category
       }
     })
     
-    return NextResponse.json(project)
+    return NextResponse.json(skill)
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to update project' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to update skill' }, { status: 500 })
   }
 }
 
@@ -76,7 +70,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'ID is required' }, { status: 400 })
     }
     
-    await prisma.project.delete({
+    await prisma.skill.delete({
       where: {
         id
       }
@@ -84,6 +78,6 @@ export async function DELETE(request: Request) {
     
     return NextResponse.json({ success: true })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete project' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to delete skill' }, { status: 500 })
   }
 }
