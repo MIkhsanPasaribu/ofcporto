@@ -28,6 +28,10 @@ const nextConfig: NextConfig = {
     // Only run TypeScript type checking in development, not during builds
     ignoreBuildErrors: true,
   },
+  // Add experimental configuration for better Prisma support
+  experimental: {
+    serverComponentsExternalPackages: ["@prisma/client", "bcrypt"],
+  },
 };
 
 export default nextConfig;
