@@ -1,10 +1,10 @@
 {
-  "buildCommand": "prisma generate && next build",
+  "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
   "regions": ["sin1"],
   "env": {
-    "NEXTAUTH_URL": "https://your-domain.vercel.app"
+    "NEXTAUTH_URL": "https://ofcporto-1z6am3hd5-m-ikhsan-pasaribus-projects.vercel.app"
   }
 }
