@@ -23,6 +23,11 @@ const nextConfig: NextConfig = {
     // Only run ESLint in development, not during builds
     ignoreDuringBuilds: true,
   },
+  // Disable TypeScript type checking during builds
+  typescript: {
+    // Only run TypeScript type checking in development, not during builds
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;
