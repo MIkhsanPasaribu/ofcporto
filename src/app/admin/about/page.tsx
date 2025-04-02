@@ -3,6 +3,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import FormField from '@/components/admin/FormField';
+import { fetchFromAPI } from '@/lib/api-utils';
 
 export default function AboutPage() {
   const [formData, setFormData] = useState({
@@ -27,13 +28,10 @@ export default function AboutPage() {
     // Fetch existing about data
     const fetchAbout = async () => {
       try {
-        const response = await fetch('/api/about');
-        if (response.ok) {
-          const data = await response.json();
-          if (data) {
-            setFormData(data);
-            setIsEditing(true);
-          }
+        const data = await fetchFromAPI('/api/about');
+        if (data) {
+          setFormData(data);
+          setIsEditing(true);
         }
       } catch (error) {
         console.error('Error fetching about data:', error);

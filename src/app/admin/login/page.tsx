@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import './login.css';
+import { useEffect } from 'react';
+import { fetchFromAPI } from '@/lib/api-utils';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,10 +35,10 @@ export default function LoginPage() {
     }));
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
+    setIsLoading(true);
 
     try {
       const result = await signIn('credentials', {
@@ -47,24 +49,26 @@ export default function LoginPage() {
 
       if (result?.error) {
         setError('Invalid email or password');
-      } else {
-        router.push('/admin');
+        setIsLoading(false);
+        return;
       }
+
+      router.push('/admin');
     } catch (error) {
-      setError('An error occurred. Please try again.');
-    } finally {
+      console.error('Login error:', error);
+      setError('An error occurred during login');
       setIsLoading(false);
     }
   };
 
   // Add this to your login page component
   useEffect(() => {
-    // Create admin user on first load
+    // Try to initialize admin user on first load
     const initializeAdmin = async () => {
       try {
+        // Create a reset admin endpoint that we can call
         const response = await fetch('/api/admin/seed');
-        const data = await response.json();
-        console.log('Admin initialization:', data);
+        console.log('Admin initialization response:', await response.json());
       } catch (error) {
         console.error('Error initializing admin:', error);
       }

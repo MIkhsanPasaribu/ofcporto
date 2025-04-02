@@ -15,6 +15,8 @@ console.log("NextAuth Config:", {
   useSecureCookies,
   hostingUrl,
   nodeEnv: process.env.NODE_ENV,
+  vercelUrl: process.env.VERCEL_URL,
+  nextAuthUrl: process.env.NEXTAUTH_URL
 });
 
 const handler = NextAuth({
