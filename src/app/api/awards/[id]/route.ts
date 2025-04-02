@@ -2,11 +2,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// Update the type definition to match Next.js 15 requirements
+// Using the NextRequest type from next/server
+import { NextRequest } from 'next/server'
+
 export async function GET(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
-): Promise<NextResponse<{ error: string }> | NextResponse<{ id: string; createdAt: Date; updatedAt: Date; title: string; issuer: string; date: Date; description: string | null }>> {
+) {
   try {
     const id = params.id
     
