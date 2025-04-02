@@ -1,8 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
+
+// Determine the correct URL for NextAuth
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith("https://") ?? false;
+const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+const hostingUrl = process.env.VERCEL_URL 
+  ? `https://${process.env.VERCEL_URL}` 
+  : process.env.NEXTAUTH_URL;
 
 const handler = NextAuth({
   providers: [
@@ -14,10 +22,13 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
+          console.log("Missing credentials");
           return null;
         }
 
         try {
+          console.log(`Attempting login for: ${credentials.email}`);
+          
           const user = await prisma.user.findUnique({
             where: {
               email: credentials.email
@@ -29,6 +40,7 @@ const handler = NextAuth({
             return null;
           }
 
+          console.log("User found, checking password");
           const passwordMatch = await bcrypt.compare(
             credentials.password,
             user.password
@@ -39,6 +51,7 @@ const handler = NextAuth({
             return null;
           }
 
+          console.log("Login successful");
           return {
             id: user.id,
             email: user.email,
@@ -58,6 +71,17 @@ const handler = NextAuth({
   pages: {
     signIn: "/admin/login",
     error: "/admin/login",
+  },
+  cookies: {
+    sessionToken: {
+      name: `${cookiePrefix}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
   },
   callbacks: {
     async jwt({ token, user }) {
