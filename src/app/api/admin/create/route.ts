@@ -22,8 +22,8 @@ export async function POST(request: Request) {
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: {
-        email: body.email,
-      },
+        email: body.email
+      }
     });
     
     if (existingUser) {
@@ -33,30 +33,30 @@ export async function POST(request: Request) {
       );
     }
     
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(body.password, 10);
+    // Create new user
+    const hashedPassword = await bcrypt.hash(body.password, 12);
     
-    // Create the user
     const user = await prisma.user.create({
       data: {
         email: body.email,
         password: hashedPassword,
-        name: body.name,
-      },
+        name: body.name
+      }
     });
     
-    // Return the user without the password
     return NextResponse.json({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      createdAt: user.createdAt,
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
+      }
     }, { status: 201 });
     
   } catch (error) {
-    console.error('Error creating admin user:', error);
+    console.error('Error creating user:', error);
     return NextResponse.json(
-      { error: 'Failed to create admin user' },
+      { error: 'Failed to create user' },
       { status: 500 }
     );
   }

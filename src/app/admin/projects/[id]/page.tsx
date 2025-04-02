@@ -39,7 +39,7 @@ export default function ProjectForm() {
     if (!isNew) {
       const fetchProject = async () => {
         try {
-          const response = await fetch(`/api/projects/${id}`);
+          const response = await fetch(`/api/projects?id=${id}`);
           if (response.ok) {
             const data = await response.json();
             setFormData(data);

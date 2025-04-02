@@ -37,7 +37,7 @@ export default function ExperienceForm() {
     if (!isNew) {
       const fetchExperience = async () => {
         try {
-          const response = await fetch(`/api/experiences/${id}`);
+          const response = await fetch(`/api/experiences?id=${id}`);
           if (response.ok) {
             const data = await response.json();
             // Format dates for input fields

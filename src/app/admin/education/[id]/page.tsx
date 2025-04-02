@@ -36,7 +36,7 @@ export default function EducationForm() {
     if (!isNew) {
       const fetchEducation = async () => {
         try {
-          const response = await fetch(`/api/education/${id}`);
+          const response = await fetch(`/api/education?id=${id}`);
           if (response.ok) {
             const data = await response.json();
             // Format dates for input fields

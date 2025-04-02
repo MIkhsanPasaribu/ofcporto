@@ -35,7 +35,7 @@ export default function CertificationForm() {
     if (!isNew) {
       const fetchCertification = async () => {
         try {
-          const response = await fetch(`/api/certifications/${id}`);
+          const response = await fetch(`/api/certifications?id=${id}`);
           if (response.ok) {
             const data = await response.json();
             // Format dates for input fields

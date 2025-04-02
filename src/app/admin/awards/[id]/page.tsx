@@ -33,7 +33,7 @@ export default function AwardForm() {
     if (!isNew) {
       const fetchAward = async () => {
         try {
-          const response = await fetch(`/api/awards/${id}`);
+          const response = await fetch(`/api/awards?id=${id}`);
           if (response.ok) {
             const data = await response.json();
             // Format date for input field

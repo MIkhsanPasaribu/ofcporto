@@ -7,7 +7,8 @@ const prisma = new PrismaClient();
 export async function POST(request: Request) {
   try {
     // Verifikasi token keamanan
-    const { token } = await request.json();
+    const body = await request.json();
+    const token = body.token;
     const resetToken = process.env.ADMIN_RESET_TOKEN;
     
     if (!resetToken || token !== resetToken) {
