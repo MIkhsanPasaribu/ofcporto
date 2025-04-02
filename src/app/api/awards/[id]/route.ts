@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET(
   _request: Request,
   { params }: { params: { id: string } }
-) {
+): Promise<NextResponse<{ error: string }> | NextResponse<{ id: string; createdAt: Date; updatedAt: Date; title: string; issuer: string; date: Date; description: string | null }>> {
   try {
     const id = params.id
     
