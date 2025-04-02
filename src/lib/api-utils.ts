@@ -7,7 +7,16 @@ export const fetchFromAPI = async (endpoint: string, options = {}) => {
   // For client-side requests, we need to use the full URL in production
   // or relative URL in development
   const isClient = typeof window !== 'undefined';
-  const baseUrl = isClient ? window.location.origin : '';
+  let baseUrl = '';
+  
+  if (isClient) {
+    // In the browser, use the current origin or the configured API URL
+    baseUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin;
+  } else {
+    // On the server, use the configured API URL or default to empty (relative URLs)
+    baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+  }
+  
   const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
   
   try {

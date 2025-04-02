@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -6,11 +5,17 @@ import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
 
 // Determine the correct URL for NextAuth
-const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith("https://") ?? false;
+const useSecureCookies = process.env.VERCEL_URL || (process.env.NEXTAUTH_URL?.startsWith("https://") ?? false);
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 const hostingUrl = process.env.VERCEL_URL 
   ? `https://${process.env.VERCEL_URL}` 
   : process.env.NEXTAUTH_URL;
+
+console.log("NextAuth Config:", {
+  useSecureCookies,
+  hostingUrl,
+  nodeEnv: process.env.NODE_ENV,
+});
 
 const handler = NextAuth({
   providers: [
@@ -97,8 +102,8 @@ const handler = NextAuth({
       return session;
     }
   },
-  // Update this line to explicitly disable debug in production
-  debug: process.env.NODE_ENV === "development" && process.env.NEXTAUTH_DEBUG === "true",
+  // Enable debug in both development and production temporarily
+  debug: true,
 });
 
 export { handler as GET, handler as POST };

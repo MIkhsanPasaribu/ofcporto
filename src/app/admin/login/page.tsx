@@ -57,6 +57,22 @@ export default function LoginPage() {
     }
   };
 
+  // Add this to your login page component
+  useEffect(() => {
+    // Create admin user on first load
+    const initializeAdmin = async () => {
+      try {
+        const response = await fetch('/api/admin/seed');
+        const data = await response.json();
+        console.log('Admin initialization:', data);
+      } catch (error) {
+        console.error('Error initializing admin:', error);
+      }
+    };
+    
+    initializeAdmin();
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
