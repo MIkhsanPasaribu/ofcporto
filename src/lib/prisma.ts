@@ -232,7 +232,73 @@ export const prisma = {
       
       return data;
     },
-    // Add other methods similar to experience
+    findUnique: async ({ where }: { where: { id: string } }) => {
+      const { data, error } = await supabaseAdmin
+        .from('education')
+        .select('*')
+        .eq('id', where.id)
+        .single();
+      
+      if (error) {
+        console.error('Error finding education:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    create: async ({ data }: { data: any }) => {
+      const { data: education, error } = await supabaseAdmin
+        .from('education')
+        .insert([{
+          ...data,
+          start_date: data.startDate,
+          end_date: data.endDate,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating education:', error);
+        throw new Error(`Failed to create education: ${error.message}`);
+      }
+      
+      return education;
+    },
+    update: async ({ where, data }: { where: { id: string }, data: any }) => {
+      const { data: education, error } = await supabaseAdmin
+        .from('education')
+        .update({
+          ...data,
+          start_date: data.startDate,
+          end_date: data.endDate,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', where.id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error updating education:', error);
+        throw new Error(`Failed to update education: ${error.message}`);
+      }
+      
+      return education;
+    },
+    delete: async ({ where }: { where: { id: string } }) => {
+      const { error } = await supabaseAdmin
+        .from('education')
+        .delete()
+        .eq('id', where.id);
+      
+      if (error) {
+        console.error('Error deleting education:', error);
+        throw new Error(`Failed to delete education: ${error.message}`);
+      }
+      
+      return { id: where.id };
+    }
   },
   
   award: {
@@ -249,15 +315,79 @@ export const prisma = {
       
       return data;
     },
-    // Add other methods similar to experience
+    findUnique: async ({ where }: { where: { id: string } }) => {
+      const { data, error } = await supabaseAdmin
+        .from('awards')
+        .select('*')
+        .eq('id', where.id)
+        .single();
+      
+      if (error) {
+        console.error('Error finding award:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    create: async ({ data }: { data: any }) => {
+      const { data: award, error } = await supabaseAdmin
+        .from('awards')
+        .insert([{
+          ...data,
+          date: data.date,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating award:', error);
+        throw new Error(`Failed to create award: ${error.message}`);
+      }
+      
+      return award;
+    },
+    update: async ({ where, data }: { where: { id: string }, data: any }) => {
+      const { data: award, error } = await supabaseAdmin
+        .from('awards')
+        .update({
+          ...data,
+          date: data.date,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', where.id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error updating award:', error);
+        throw new Error(`Failed to update award: ${error.message}`);
+      }
+      
+      return award;
+    },
+    delete: async ({ where }: { where: { id: string } }) => {
+      const { error } = await supabaseAdmin
+        .from('awards')
+        .delete()
+        .eq('id', where.id);
+      
+      if (error) {
+        console.error('Error deleting award:', error);
+        throw new Error(`Failed to delete award: ${error.message}`);
+      }
+      
+      return { id: where.id };
+    }
   },
   
   certification: {
-    findMany: async () => {
+    findMany: async ({ orderBy }: { orderBy?: any } = {}) => {
       const { data, error } = await supabaseAdmin
         .from('certifications')
         .select('*')
-        .order('issue_date', { ascending: false });
+        .order(orderBy?.issueDate || 'issue_date', { ascending: false });
       
       if (error) {
         console.error('Error finding certifications:', error);
@@ -266,7 +396,77 @@ export const prisma = {
       
       return data;
     },
-    // Add other methods similar to experience
+    findUnique: async ({ where }: { where: { id: string } }) => {
+      const { data, error } = await supabaseAdmin
+        .from('certifications')
+        .select('*')
+        .eq('id', where.id)
+        .single();
+      
+      if (error) {
+        console.error('Error finding certification:', error);
+        return null;
+      }
+      
+      return data;
+    },
+    create: async ({ data }: { data: any }) => {
+      const { data: certification, error } = await supabaseAdmin
+        .from('certifications')
+        .insert([{
+          ...data,
+          issue_date: data.issueDate,
+          expiry_date: data.expiryDate,
+          credential_id: data.credentialId,
+          credential_url: data.credentialUrl,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating certification:', error);
+        throw new Error(`Failed to create certification: ${error.message}`);
+      }
+      
+      return certification;
+    },
+    update: async ({ where, data }: { where: { id: string }, data: any }) => {
+      const { data: certification, error } = await supabaseAdmin
+        .from('certifications')
+        .update({
+          ...data,
+          issue_date: data.issueDate,
+          expiry_date: data.expiryDate,
+          credential_id: data.credentialId,
+          credential_url: data.credentialUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', where.id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error updating certification:', error);
+        throw new Error(`Failed to update certification: ${error.message}`);
+      }
+      
+      return certification;
+    },
+    delete: async ({ where }: { where: { id: string } }) => {
+      const { error } = await supabaseAdmin
+        .from('certifications')
+        .delete()
+        .eq('id', where.id);
+      
+      if (error) {
+        console.error('Error deleting certification:', error);
+        throw new Error(`Failed to delete certification: ${error.message}`);
+      }
+      
+      return { id: where.id };
+    }
   },
   
   about: {
