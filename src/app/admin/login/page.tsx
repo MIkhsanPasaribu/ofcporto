@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import './login.css';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,6 +14,16 @@ export default function LoginPage() {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Add effect to disable problematic extensions on this page
+  useEffect(() => {
+    // Add a class to the body to help identify this page for extensions
+    document.body.classList.add('login-page');
+    
+    return () => {
+      document.body.classList.remove('login-page');
+    };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -57,7 +68,7 @@ export default function LoginPage() {
           </div>
         )}
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} autoComplete="off">
           <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -70,6 +81,7 @@ export default function LoginPage() {
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoComplete="off"
             />
           </div>
           
@@ -85,6 +97,7 @@ export default function LoginPage() {
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoComplete="off"
             />
           </div>
           

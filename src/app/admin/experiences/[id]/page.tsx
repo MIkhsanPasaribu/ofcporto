@@ -2,12 +2,13 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import FormField from '@/components/admin/FormField';
 
-export default function ExperienceForm({ params }: { params: { id: string } }) {
+export default function ExperienceForm() {
   const router = useRouter();
-  const { id } = params;
+  const params = useParams();
+  const id = params.id as string;
   const isNew = id === 'new';
   
   const [formData, setFormData] = useState({
@@ -31,6 +32,7 @@ export default function ExperienceForm({ params }: { params: { id: string } }) {
   
   const [isLoading, setIsLoading] = useState(false);
   
+  // Just update the useEffect to use the new id variable
   useEffect(() => {
     if (!isNew) {
       const fetchExperience = async () => {

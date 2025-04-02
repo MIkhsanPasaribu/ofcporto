@@ -2,12 +2,13 @@
 'use client';
 
 import { useState, useEffect, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import FormField from '@/components/admin/FormField';
 
-export default function SkillForm({ params }: { params: { id: string } }) {
+export default function SkillForm() {
   const router = useRouter();
-  const { id } = params;
+  const params = useParams();
+  const id = params.id as string;
   const isNew = id === 'new';
   
   const [formData, setFormData] = useState({

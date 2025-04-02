@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -33,17 +34,34 @@ export default function HomePage() {
           fetch('/api/skills')
         ]);
         
+        // Check if responses are ok before proceeding
+        if (!projectsRes.ok || !skillsRes.ok) {
+          console.error('Error fetching data: One or more API requests failed');
+          setIsLoading(false);
+          return;
+        }
+        
         const [projects, allSkills] = await Promise.all([
           projectsRes.json(),
           skillsRes.json()
         ]);
         
         // Get up to 3 featured projects
-        setFeaturedProjects(projects.slice(0, 3));
+        if (Array.isArray(projects)) {
+          setFeaturedProjects(projects.slice(0, 3));
+        } else {
+          console.error('Projects data is not an array:', projects);
+          setFeaturedProjects([]);
+        }
         
         // Get top skills (highest level)
-        const sortedSkills = allSkills.sort((a: Skill, b: Skill) => b.level - a.level);
-        setSkills(sortedSkills.slice(0, 8));
+        if (Array.isArray(allSkills)) {
+          const sortedSkills = [...allSkills].sort((a: Skill, b: Skill) => b.level - a.level);
+          setSkills(sortedSkills.slice(0, 8));
+        } else {
+          console.error('Skills data is not an array:', allSkills);
+          setSkills([]);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {

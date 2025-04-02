@@ -4,10 +4,12 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import FormField from '@/components/admin/FormField';
+import { useParams } from 'next/navigation';
 
-export default function ProjectForm({ params }: { params: { id: string } }) {
+export default function ProjectForm() {
   const router = useRouter();
-  const { id } = params;
+  const params = useParams();
+  const id = params.id as string;
   const isNew = id === 'new';
   
   const [formData, setFormData] = useState({
@@ -32,6 +34,7 @@ export default function ProjectForm({ params }: { params: { id: string } }) {
   
   const [isLoading, setIsLoading] = useState(false);
   
+  // Just update the useEffect to use the new id variable
   useEffect(() => {
     if (!isNew) {
       const fetchProject = async () => {
