@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { fetchFromAPI } from '@/lib/api-utils';
 
 type DashboardStats = {
   projects: number;
@@ -29,25 +31,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch counts from each API endpoint
-        const [
-          projectsRes,
-          experiencesRes,
-          skillsRes,
-          educationRes,
-          certificationsRes,
-          awardsRes,
-          contactsRes
-        ] = await Promise.all([
-          fetch('/api/projects'),
-          fetch('/api/experiences'),
-          fetch('/api/skills'),
-          fetch('/api/education'),
-          fetch('/api/certifications'),
-          fetch('/api/awards'),
-          fetch('/api/contacts')
-        ]);
+        setIsLoading(true);
         
+        // Fetch all data in parallel
         const [
           projects,
           experiences,
@@ -57,13 +43,13 @@ export default function AdminDashboard() {
           awards,
           contacts
         ] = await Promise.all([
-          projectsRes.json(),
-          experiencesRes.json(),
-          skillsRes.json(),
-          educationRes.json(),
-          certificationsRes.json(),
-          awardsRes.json(),
-          contactsRes.json()
+          fetchFromAPI('api/projects'),
+          fetchFromAPI('api/experiences'),
+          fetchFromAPI('api/skills'),
+          fetchFromAPI('api/education'),
+          fetchFromAPI('api/certifications'),
+          fetchFromAPI('api/awards'),
+          fetchFromAPI('api/contacts')
         ]);
         
         setStats({
@@ -81,7 +67,7 @@ export default function AdminDashboard() {
         setIsLoading(false);
       }
     };
-    
+
     fetchStats();
   }, []);
   

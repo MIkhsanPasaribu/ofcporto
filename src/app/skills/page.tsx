@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { fetchFromAPI } from '@/lib/api-utils';
 
 type Skill = {
   id: string;
@@ -18,19 +19,16 @@ export default function SkillsPage() {
   useEffect(() => {
     const fetchSkills = async () => {
       try {
-        const response = await fetch('/api/skills');
-        if (response.ok) {
-          const data = await response.json();
-          setSkills(data);
-          
-          // Extract unique categories
-          const uniqueCategories = Array.from(new Set(data.map((skill: Skill) => skill.category)));
-          setCategories(uniqueCategories as string[]);
-        } else {
-          setError('Failed to fetch skills');
-        }
+        setIsLoading(true);
+        const data = await fetchFromAPI('api/skills');
+        setSkills(data);
+        
+        // Extract unique categories
+        const uniqueCategories = Array.from(new Set(data.map((skill: Skill) => skill.category)));
+        setCategories(uniqueCategories as string[]);
       } catch (error) {
         setError('An error occurred while fetching skills');
+        console.error('Skills fetch error:', error);
       } finally {
         setIsLoading(false);
       }

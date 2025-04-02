@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { fetchFromAPI } from '@/lib/api-utils';
 
 type Project = {
   id: string;
@@ -22,15 +23,12 @@ export default function ProjectsPage() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const response = await fetch('/api/projects');
-        if (response.ok) {
-          const data = await response.json();
-          setProjects(data);
-        } else {
-          setError('Failed to fetch projects');
-        }
+        setIsLoading(true);
+        const data = await fetchFromAPI('api/projects');
+        setProjects(data);
       } catch (error) {
         setError('An error occurred while fetching projects');
+        console.error('Projects fetch error:', error);
       } finally {
         setIsLoading(false);
       }

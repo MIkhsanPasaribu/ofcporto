@@ -2,10 +2,10 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "outputDirectory": ".next",
   "regions": ["sin1"],
   "env": {
-    "NEXTAUTH_URL": "https://ofcporto-1z6am3hd5-m-ikhsan-pasaribus-projects.vercel.app",
-    "ADMIN_NAME": "M. Ikhsan Pasaribu"
+    "NEXTAUTH_URL": "https://porto-mikhsanpasaribu.vercel.app",
+    "ADMIN_NAME": "M. Ikhsan Pasaribu",
+    "NEXT_PUBLIC_API_URL": "https://porto-mikhsanpasaribu.vercel.app"
   }
 }
