@@ -1,10 +1,30 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 
-const prisma = new PrismaClient()
-
-export async function GET() {
+export async function GET(request: Request) {
+  // Get the URL and create a URL object to parse query parameters
+  const url = new URL(request.url)
+  const id = url.searchParams.get('id')
+  
+  // If ID is provided, return a single certification
+  if (id) {
+    try {
+      const certification = await prisma.certification.findUnique({
+        where: { id }
+      })
+      
+      if (!certification) {
+        return NextResponse.json({ error: 'Certification not found' }, { status: 404 })
+      }
+      
+      return NextResponse.json(certification)
+    } catch (error) {
+      return NextResponse.json({ error: 'Failed to fetch certification' }, { status: 500 })
+    }
+  }
+  
+  // Otherwise, return all certifications (existing functionality)
   try {
     const certifications = await prisma.certification.findMany({
       orderBy: {

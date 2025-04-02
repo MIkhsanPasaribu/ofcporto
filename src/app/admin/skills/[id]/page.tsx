@@ -32,7 +32,7 @@ export default function SkillForm() {
     if (!isNew) {
       const fetchSkill = async () => {
         try {
-          const response = await fetch(`/api/skills/${id}`);
+          const response = await fetch(`/api/skills?id=${id}`);
           if (response.ok) {
             const data = await response.json();
             setFormData(data);

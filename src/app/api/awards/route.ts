@@ -1,10 +1,30 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 
-const prisma = new PrismaClient()
-
-export async function GET() {
+export async function GET(request: Request) {
+  // Get the URL and create a URL object to parse query parameters
+  const url = new URL(request.url)
+  const id = url.searchParams.get('id')
+  
+  // If ID is provided, return a single award
+  if (id) {
+    try {
+      const award = await prisma.award.findUnique({
+        where: { id }
+      })
+      
+      if (!award) {
+        return NextResponse.json({ error: 'Award not found' }, { status: 404 })
+      }
+      
+      return NextResponse.json(award)
+    } catch (error) {
+      return NextResponse.json({ error: 'Failed to fetch award' }, { status: 500 })
+    }
+  }
+  
+  // Otherwise, return all awards (existing functionality)
   try {
     const awards = await prisma.award.findMany({
       orderBy: {

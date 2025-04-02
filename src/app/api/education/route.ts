@@ -1,10 +1,30 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 
-const prisma = new PrismaClient()
-
-export async function GET() {
+export async function GET(request: Request) {
+  // Get the URL and create a URL object to parse query parameters
+  const url = new URL(request.url)
+  const id = url.searchParams.get('id')
+  
+  // If ID is provided, return a single education
+  if (id) {
+    try {
+      const education = await prisma.education.findUnique({
+        where: { id }
+      })
+      
+      if (!education) {
+        return NextResponse.json({ error: 'Education not found' }, { status: 404 })
+      }
+      
+      return NextResponse.json(education)
+    } catch (error) {
+      return NextResponse.json({ error: 'Failed to fetch education' }, { status: 500 })
+    }
+  }
+  
+  // Otherwise, return all education (existing functionality)
   try {
     const education = await prisma.education.findMany({
       orderBy: {

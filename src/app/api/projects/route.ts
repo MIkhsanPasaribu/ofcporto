@@ -1,10 +1,30 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 
-const prisma = new PrismaClient()
-
-export async function GET() {
+export async function GET(request: Request) {
+  // Get the URL and create a URL object to parse query parameters
+  const url = new URL(request.url)
+  const id = url.searchParams.get('id')
+  
+  // If ID is provided, return a single project
+  if (id) {
+    try {
+      const project = await prisma.project.findUnique({
+        where: { id }
+      })
+      
+      if (!project) {
+        return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+      }
+      
+      return NextResponse.json(project)
+    } catch (error) {
+      return NextResponse.json({ error: 'Failed to fetch project' }, { status: 500 })
+    }
+  }
+  
+  // Otherwise, return all projects (existing functionality)
   try {
     const projects = await prisma.project.findMany({
       orderBy: {
