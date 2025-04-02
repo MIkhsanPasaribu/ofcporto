@@ -2,12 +2,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Update the type definition to match Next.js 15 requirements
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const id = context.params.id
+    const id = params.id
     
     const award = await prisma.award.findUnique({
       where: {
