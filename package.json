@@ -4,13 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build --no-lint",
+    "build": "next build --no-lint",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "prisma generate"
+    "lint": "next lint"
   },
   "dependencies": {
-    "@prisma/client": "^6.5.0",
     "@react-three/drei": "^10.0.5",
     "@react-three/fiber": "^9.1.1",
     "@supabase/supabase-js": "^2.39.7",
@@ -18,7 +16,6 @@
     "framer-motion": "^12.6.2",
     "next": "15.2.4",
     "next-auth": "^4.24.11",
-    "prisma": "^6.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.175.0",

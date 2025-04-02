@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { dbOperations } from "@/lib/db-direct";
+import { authUtils } from "@/lib/auth-utils";
 
 // Log environment information
 console.log("[NextAuth] Environment:", {
   nodeEnv: process.env.NODE_ENV,
   vercelUrl: process.env.VERCEL_URL,
   nextAuthUrl: process.env.NEXTAUTH_URL,
+  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Not Set',
 });
 
 // Create handler with simplified configuration
@@ -29,17 +30,17 @@ const handler = NextAuth({
           console.log(`[NextAuth] Attempting login for: ${credentials.email}`);
           
           // Ensure admin exists before attempting login
-          await dbOperations.ensureAdminExists();
+          await authUtils.ensureAdminExists();
           
           // Find user
-          const user = await dbOperations.findUserByEmail(credentials.email);
+          const user = await authUtils.findUserByEmail(credentials.email);
           if (!user) {
             console.log("[NextAuth] User not found");
             return null;
           }
 
           // Verify password
-          const passwordMatch = await dbOperations.verifyPassword(
+          const passwordMatch = await authUtils.verifyPassword(
             credentials.password,
             user.password
           );
@@ -77,9 +78,9 @@ const handler = NextAuth({
       }
       return token;
     },
-    async session({ session, token }: { session: any; token: any }) {
+    async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id as string;
+        (session.user as any).id = token.id as string;
       }
       return session;
     }

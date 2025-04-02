@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server';
-import { dbOperations } from '@/lib/db-direct';
+import { authUtils } from '@/lib/auth-utils';
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
     console.log('[Admin Init] Starting admin initialization');
     
     // Create admin user if it doesn't exist
-    const admin = await dbOperations.ensureAdminExists();
+    const admin = await authUtils.ensureAdminExists();
     
     console.log('[Admin Init] Admin user initialized successfully');
     return NextResponse.json({
