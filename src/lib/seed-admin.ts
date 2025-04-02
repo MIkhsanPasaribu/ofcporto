@@ -1,15 +1,21 @@
-import { PrismaClient } from '@prisma/client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { supabaseAdmin } from './supabase';
 import bcrypt from 'bcrypt';
-
-const prisma = new PrismaClient();
 
 export async function seedAdmin() {
   try {
-    // Cek apakah sudah ada user
-    const userCount = await prisma.user.count();
+    // Check if there are any users
+    const { count, error: countError } = await supabaseAdmin
+      .from('users')
+      .select('*', { count: 'exact', head: true });
     
-    if (userCount === 0) {
-      // Gunakan environment variables untuk kredensial
+    if (countError) {
+      console.error('Error counting users:', countError);
+      return;
+    }
+    
+    if (count === 0) {
+      // Use environment variables for credentials
       const adminEmail = process.env.ADMIN_EMAIL;
       const adminPassword = process.env.ADMIN_PASSWORD;
       const adminName = process.env.ADMIN_NAME || 'M. Ikhsan Pasaribu';
@@ -19,16 +25,24 @@ export async function seedAdmin() {
         return;
       }
       
-      // Buat user admin jika belum ada
+      // Create admin user if none exists
       const hashedPassword = await bcrypt.hash(adminPassword, 12);
       
-      await prisma.user.create({
-        data: {
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .insert([{
           email: adminEmail,
           password: hashedPassword,
-          name: adminName
-        }
-      });
+          name: adminName,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select();
+      
+      if (error) {
+        console.error('Error creating admin user:', error);
+        return;
+      }
       
       console.log('Admin user created successfully');
     } else {
@@ -36,7 +50,5 @@ export async function seedAdmin() {
     }
   } catch (error) {
     console.error('Error seeding admin user:', error);
-  } finally {
-    await prisma.$disconnect();
   }
 }
