@@ -97,7 +97,8 @@ const handler = NextAuth({
       return session;
     }
   },
-  debug: process.env.NODE_ENV === "development",
+  // Update this line to explicitly disable debug in production
+  debug: process.env.NODE_ENV === "development" && process.env.NEXTAUTH_DEBUG === "true",
 });
 
 export { handler as GET, handler as POST };

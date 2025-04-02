@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-import { prisma } from '@/lib/prisma' // Use the singleton instance instead
+import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const id = context.params.id
+    const id = params.id
     
     const project = await prisma.project.findUnique({
       where: {
