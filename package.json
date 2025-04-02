@@ -12,6 +12,7 @@
     "@prisma/client": "^6.5.0",
     "@react-three/drei": "^10.0.5",
     "@react-three/fiber": "^9.1.1",
+    "@supabase/supabase-js": "^2.49.4",
     "bcrypt": "^5.1.1",
     "framer-motion": "^12.6.2",
     "next": "15.2.4",
