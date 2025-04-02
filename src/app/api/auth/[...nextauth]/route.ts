@@ -1,24 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcrypt";
-import { prisma } from "@/lib/prisma";
+import { dbOperations } from "@/lib/db-direct";
 
-// Determine the correct URL for NextAuth
-const useSecureCookies = process.env.VERCEL_URL || (process.env.NEXTAUTH_URL?.startsWith("https://") ?? false);
-const cookiePrefix = useSecureCookies ? "__Secure-" : "";
-const hostingUrl = process.env.VERCEL_URL 
-  ? `https://${process.env.VERCEL_URL}` 
-  : process.env.NEXTAUTH_URL;
-
-console.log("NextAuth Config:", {
-  useSecureCookies,
-  hostingUrl,
+// Log environment information
+console.log("[NextAuth] Environment:", {
   nodeEnv: process.env.NODE_ENV,
   vercelUrl: process.env.VERCEL_URL,
-  nextAuthUrl: process.env.NEXTAUTH_URL
+  nextAuthUrl: process.env.NEXTAUTH_URL,
 });
 
+// Create handler with simplified configuration
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
@@ -29,66 +21,54 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.log("Missing credentials");
+          console.log("[NextAuth] Missing credentials");
           return null;
         }
 
         try {
-          console.log(`Attempting login for: ${credentials.email}`);
+          console.log(`[NextAuth] Attempting login for: ${credentials.email}`);
           
-          const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email
-            }
-          });
-
+          // Ensure admin exists before attempting login
+          await dbOperations.ensureAdminExists();
+          
+          // Find user
+          const user = await dbOperations.findUserByEmail(credentials.email);
           if (!user) {
-            console.log("User not found");
+            console.log("[NextAuth] User not found");
             return null;
           }
 
-          console.log("User found, checking password");
-          const passwordMatch = await bcrypt.compare(
+          // Verify password
+          const passwordMatch = await dbOperations.verifyPassword(
             credentials.password,
             user.password
           );
 
           if (!passwordMatch) {
-            console.log("Password doesn't match");
+            console.log("[NextAuth] Password doesn't match");
             return null;
           }
 
-          console.log("Login successful");
+          console.log("[NextAuth] Login successful");
           return {
             id: user.id,
             email: user.email,
             name: user.name
           };
         } catch (error) {
-          console.error("Auth error:", error);
+          console.error("[NextAuth] Auth error:", error);
           return null;
         }
       }
     })
   ],
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
   pages: {
     signIn: "/admin/login",
     error: "/admin/login",
   },
-  cookies: {
-    sessionToken: {
-      name: `${cookiePrefix}next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: useSecureCookies,
-      },
-    },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -97,15 +77,14 @@ const handler = NextAuth({
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: any }) {
       if (token && session.user) {
-        (session.user as any).id = token.id as string;
+        session.user.id = token.id as string;
       }
       return session;
     }
   },
-  // Enable debug in both development and production temporarily
-  debug: true,
+  debug: process.env.NODE_ENV !== "production" || process.env.NEXTAUTH_DEBUG === "true",
 });
 
 export { handler as GET, handler as POST };

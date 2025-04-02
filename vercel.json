@@ -12,7 +12,6 @@
     "ADMIN_RESET_TOKEN": "${ADMIN_RESET_TOKEN}",
     "DATABASE_URL": "${DATABASE_URL}",
     "DIRECT_URL": "${DIRECT_URL}",
-    "NEXT_PUBLIC_API_URL": "https://${VERCEL_URL}",
     "NEXTAUTH_DEBUG": "true"
   }
 }

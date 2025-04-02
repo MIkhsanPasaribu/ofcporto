@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import './login.css';
-import { useEffect } from 'react';
-import { fetchFromAPI } from '@/lib/api-utils';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,14 +15,32 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  // Add effect to disable problematic extensions on this page
+  // Add effect to initialize admin user
   useEffect(() => {
-    // Add a class to the body to help identify this page for extensions
-    document.body.classList.add('login-page');
-    
-    return () => {
-      document.body.classList.remove('login-page');
+    const initializeAdmin = async () => {
+      try {
+        console.log('Initializing admin user...');
+        const response = await fetch('/api/admin/init', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token: 'initialize-admin-account',
+          }),
+        });
+        
+        if (response.ok) {
+          console.log('Admin initialization successful');
+        } else {
+          console.error('Admin initialization failed:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error initializing admin:', error);
+      }
     };
+    
+    initializeAdmin();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,11 +57,15 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      console.log('Attempting login with:', formData.email);
+      
       const result = await signIn('credentials', {
         redirect: false,
         email: formData.email,
         password: formData.password,
       });
+
+      console.log('Login result:', result);
 
       if (result?.error) {
         setError('Invalid email or password');
@@ -60,22 +80,6 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
-
-  // Add this to your login page component
-  useEffect(() => {
-    // Try to initialize admin user on first load
-    const initializeAdmin = async () => {
-      try {
-        // Create a reset admin endpoint that we can call
-        const response = await fetch('/api/admin/seed');
-        console.log('Admin initialization response:', await response.json());
-      } catch (error) {
-        console.error('Error initializing admin:', error);
-      }
-    };
-    
-    initializeAdmin();
-  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
