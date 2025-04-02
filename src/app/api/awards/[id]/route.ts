@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { NextResponse, NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Using the simpler pattern recommended for Next.js 15
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Record<string, string> }
+  request: Request,
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id
+    const id = context.params.id
     
     const award = await prisma.award.findUnique({
       where: {
