@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 const handler = NextAuth({
   providers: [
@@ -27,6 +25,7 @@ const handler = NextAuth({
           });
 
           if (!user) {
+            console.log("User not found");
             return null;
           }
 
@@ -36,6 +35,7 @@ const handler = NextAuth({
           );
 
           if (!passwordMatch) {
+            console.log("Password doesn't match");
             return null;
           }
 
