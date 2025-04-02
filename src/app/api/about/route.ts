@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { dataOperations } from '@/lib/api-utils';
+import { dataOperations } from '@/lib/data-utils';
 
 export async function GET() {
   try {

@@ -1,29 +1,52 @@
-import { PrismaClient } from '@prisma/client';
+import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcrypt';
 
-// Create a singleton Prisma client
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
-export const prisma = globalForPrisma.prisma || new PrismaClient();
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+// Create Supabase clients
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
 
 // Direct database operations
 export const dbOperations = {
   // User operations
   async findUserByEmail(email: string) {
-    return prisma.user.findUnique({
-      where: { email }
-    });
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+      
+    if (error) {
+      console.error('Error finding user:', error);
+      return null;
+    }
+    
+    return data;
   },
   
   async createUser(email: string, password: string, name: string) {
     const hashedPassword = await bcrypt.hash(password, 12);
-    return prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name
-      }
-    });
+    
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .insert([
+        { 
+          email, 
+          password: hashedPassword, 
+          name,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ])
+      .select()
+      .single();
+      
+    if (error) {
+      console.error('Error creating user:', error);
+      throw new Error(`Failed to create user: ${error.message}`);
+    }
+    
+    return data;
   },
   
   async verifyPassword(plainPassword: string, hashedPassword: string) {
@@ -47,6 +70,7 @@ export const dbOperations = {
     }
     
     // Create admin if not exists
+    console.log('Creating admin user...');
     return this.createUser(adminEmail, adminPassword, adminName);
   }
 };

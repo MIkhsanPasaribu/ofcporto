@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { createClient } from '@supabase/supabase-js';
 
-const prisma = new PrismaClient();
+// Create Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
   try {
@@ -18,9 +21,19 @@ export async function GET() {
       );
     }
     
-    const existingAdmin = await prisma.user.findUnique({
-      where: { email: adminEmail }
-    });
+    const { data: existingAdmin, error: findError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', adminEmail)
+      .single();
+    
+    if (findError && findError.code !== 'PGRST116') {
+      console.error('Error finding admin:', findError);
+      return NextResponse.json(
+        { error: 'Error finding admin user' },
+        { status: 500 }
+      );
+    }
     
     if (existingAdmin) {
       console.log('Admin user already exists');
@@ -48,13 +61,27 @@ export async function GET() {
     
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
     
-    const newAdmin = await prisma.user.create({
-      data: {
-        email: adminEmail,
-        password: hashedPassword,
-        name: adminName,
-      },
-    });
+    const { data: newAdmin, error: createError } = await supabaseAdmin
+      .from('users')
+      .insert([
+        {
+          email: adminEmail,
+          password: hashedPassword,
+          name: adminName,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ])
+      .select()
+      .single();
+    
+    if (createError) {
+      console.error('Error creating admin:', createError);
+      return NextResponse.json(
+        { error: 'Failed to create admin user' },
+        { status: 500 }
+      );
+    }
     
     console.log('Admin user created successfully');
     return NextResponse.json({
@@ -72,7 +99,5 @@ export async function GET() {
       { error: 'Failed to seed admin user' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

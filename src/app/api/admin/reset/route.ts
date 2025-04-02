@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
-
-const prisma = new PrismaClient();
+import { supabaseAdmin } from '@/lib/supabase';
+import { authUtils } from '@/lib/auth-utils';
 
 export async function POST(request: Request) {
   try {
-    // Verifikasi token keamanan
+    // Verify security token
     const body = await request.json();
     const token = body.token;
     const resetToken = process.env.ADMIN_RESET_TOKEN;
@@ -18,39 +16,30 @@ export async function POST(request: Request) {
       );
     }
     
-    // Hapus semua user yang ada
-    await prisma.user.deleteMany({});
+    // Delete all existing users
+    const { error: deleteError } = await supabaseAdmin
+      .from('users')
+      .delete()
+      .neq('id', '0'); // This will delete all rows
     
-    // Ambil kredensial dari environment variables
-    const adminEmail = process.env.ADMIN_EMAIL;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-    const adminName = process.env.ADMIN_NAME || 'M. Ikhsan Pasaribu';
-    
-    if (!adminEmail || !adminPassword) {
+    if (deleteError) {
+      console.error('Error deleting users:', deleteError);
       return NextResponse.json(
-        { error: 'Admin credentials not found in environment variables' },
+        { error: 'Failed to delete existing users' },
         { status: 500 }
       );
     }
     
-    // Buat user admin baru
-    const hashedPassword = await bcrypt.hash(adminPassword, 12);
-    
-    const user = await prisma.user.create({
-      data: {
-        email: adminEmail,
-        password: hashedPassword,
-        name: adminName,
-      },
-    });
+    // Create new admin user
+    const admin = await authUtils.ensureAdminExists();
     
     return NextResponse.json({
       success: true,
       message: 'Admin account reset successfully',
       user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+        id: admin.id,
+        email: admin.email,
+        name: admin.name,
       }
     }, { status: 201 });
     
@@ -60,7 +49,5 @@ export async function POST(request: Request) {
       { error: 'Failed to reset admin account' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
