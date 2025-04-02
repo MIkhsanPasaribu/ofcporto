@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 
 // Update the type definition to match Next.js 15 requirements
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
