@@ -6,10 +6,10 @@ const prisma = new PrismaClient()
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id
+    const id = context.params.id
     
     const project = await prisma.project.findUnique({
       where: {
