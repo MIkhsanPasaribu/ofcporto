@@ -9,14 +9,24 @@ export async function seedAdmin() {
     const userCount = await prisma.user.count();
     
     if (userCount === 0) {
+      // Gunakan environment variables untuk kredensial
+      const adminEmail = process.env.ADMIN_EMAIL;
+      const adminPassword = process.env.ADMIN_PASSWORD;
+      const adminName = process.env.ADMIN_NAME || 'M. Ikhsan Pasaribu';
+      
+      if (!adminEmail || !adminPassword) {
+        console.error('Admin credentials not found in environment variables');
+        return;
+      }
+      
       // Buat user admin jika belum ada
-      const hashedPassword = await bcrypt.hash('admin123', 10);
+      const hashedPassword = await bcrypt.hash(adminPassword, 12);
       
       await prisma.user.create({
         data: {
-          email: 'admin@example.com',
+          email: adminEmail,
           password: hashedPassword,
-          name: 'Admin'
+          name: adminName
         }
       });
       
